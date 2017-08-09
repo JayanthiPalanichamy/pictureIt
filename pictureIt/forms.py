@@ -5,30 +5,32 @@ from pictureIt.models import User
 from django.contrib.auth.hashers import make_password,check_password
 from urllib.request import urlopen
 from random import randint
-import json,re
-class  Ajax(forms.Form):
+import json, re
 
-	args=[]
-	user=[]
+class Ajax(forms.Form):
 
-	def __init__(self,*args,**kwargs):
-		self.args=args
-		if len(args)>1:
-			self.user=args[1]
-			if self.user.id==None:
-				self.user="NL"
+    args = []
+    user = []
 
-	def error(self,message):
-		return json.dumps({"Status":"Error","Message":message}, ensure_ascii=False)
+    def __init__(self, *args, **kwargs):
+        self.args = args
+        if len(args) > 1:
+            self.user = args[1]
+            if self.user.id == None:
+                self.user = "NL"
 
-	def success(self,message):
-		return json.dumps({"Status":"Success","Message":message}, ensure_ascii=False)
+    def error(self, message):
+        return json.dumps({ "Status": "Error", "Message": message }, ensure_ascii=False)
 
-	def items(self,json):
-		return json
+    def success(self, message):
+        return json.dumps({ "Status": "Success", "Message": message }, ensure_ascii=False)
 
-	def output(self):
-		return self.validate()
+    def items(self, json):
+        return json
+
+    def output(self):
+        return self.validate()
+
 class AjaxSignUp(Ajax):
 
     def validate(self):

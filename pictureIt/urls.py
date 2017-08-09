@@ -19,6 +19,8 @@ from . import views
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^$',views.index),
-    url(r'^sign-up$',views.signup)
+    url(r'^$',views.home),
+    url(r'^sign-up$',views.signup),
+    url(r'^ajax-sign-up$',views.ajaxsignup),
+    url(r'^ajax-login$',views.ajaxlogin),
 ]
