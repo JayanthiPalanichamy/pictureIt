@@ -7,6 +7,12 @@ def ajaxsignup(request):
 	ajax = AjaxSignUp(request.POST)
 	context = {'ajax_output': ajax.output() }
 	return render(request, 'ajax.html', context)
+	
+def ajaxsavephoto(request):
+	ajax=AjaxSavePhoto(request.POST,request.user)
+	context={ 'ajax_output':ajax.output() }
+	return render(request,'ajax.html',context)
+
 
 def ajaxlogin(request):
 	ajax = AjaxLogin(request.POST)
@@ -30,3 +36,5 @@ def home(request):
 		return render(request, 'logged-in-index.html', context)
 
 	return render(request, 'index.html', context)
+
+

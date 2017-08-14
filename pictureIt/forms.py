@@ -1,11 +1,12 @@
 from django import forms
 from django.contrib.auth import authenticate
 from django.db.models import F
-from pictureIt.models import User
+from pictureIt.models import User,Photo
 from django.contrib.auth.hashers import make_password,check_password
 from urllib.request import urlopen
 from random import randint
 import json, re
+
 
 class Ajax(forms.Form):
 
@@ -87,3 +88,35 @@ class AjaxLogin(Ajax):
 		u = User.objects.filter(email=self.email)[0]
 
 		return u, self.success("User logged in!")
+
+class AjaxSavePhoto(Ajax):
+    
+    def validate(self):
+        try:
+            self.url=self.args[0]["url"]
+            self.baseurl=self.args[0]["baseurl"]
+            self.caption=self.args[0]["caption"]
+        except Exception as e:
+            return self.error("Malformed request,did not process.")
+        if self.user=="NL":
+            return self.error("Unauthorised request.")
+        if len(self.caption) >140:
+            return self.error("Caption must be 140 characters")
+        if self.url[0:20] !="https://ucarecdn.com" or self.baseurl[0:20] !="https://ucarecdn.com":
+            return self.error("Invalid image URL")
+
+        result=urlopen(self.baseurl+"-/preview/-/main_colors/3/")
+        data=result.read()
+        data=json.loads(data.decode('utf-8'))
+
+        main_colour=""
+        if data["main_colors"] !=[]:
+            for colour in data["main_colors"][randint(0,2)]:
+                main_colour=main_colour+str(colour)+","
+            main_colour=main_colour[:-1]
+        p=Photo(url=self.url,baseurl=self.baseurl,owner=self.user.username,likes=0,caption=self.caption,main_colour=main_colour)
+        p.save()      
+        return self.success("Image Uploaded")
+
+
+
