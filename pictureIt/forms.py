@@ -149,5 +149,25 @@ class AjaxProfileFeed(Ajax):
 
         return self.items(json.dumps(out))
 
+class AjaxSetProfilePic(Ajax):
+    def validate(self):
+        try:
+            self.url = self.args[0]["url"]
+            self.baseurl = self.args[0]["baseurl"]
+        except Exception as e:
+            return self.error("Malformed request, did not process.")
+
+        if self.user == "NL":
+            return self.error("Unauthorised request.")
+
+        if self.url[0:20] != "https://ucarecdn.com" or self.baseurl[0:20] != "https://ucarecdn.com":
+            return self.error("Invalid image URL")
+
+        u = User.objects.filter(username=self.user.username)[0]
+        u.profilepic=self.url
+        u.save()
+
+        return self.success("Profile Image Uploaded")
+
 
 
