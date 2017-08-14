@@ -14,6 +14,7 @@ def ajaxsavephoto(request):
 	return render(request,'ajax.html',context)
 
 
+
 def ajaxlogin(request):
 	ajax = AjaxLogin(request.POST)
 	logged_in_user, output = ajax.validate()
@@ -21,6 +22,31 @@ def ajaxlogin(request):
 		login(request, logged_in_user)
 	context = {'ajax_output': output}
 	return render(request, 'ajax.html', context)
+
+def ajaxphotofeed(request):
+	ajax=AjaxPhotoFeed(request.GET,request.user)
+	context={'ajax_output':ajax.output()}
+	return render(request,'ajax.html',context)
+
+def ajaxprofilefeed(request):
+	ajax=AjaxProfileFeed(request.GET,request.user)
+	context={'ajax_output':ajax.output()}
+	return render(request,'ajax.html',context)
+
+def profile(request,username):
+	if User.objects.filter(username=username).exists():
+		u=User.objects.filter(username=username)[0]
+		if u.profilepic == "":
+			u.profilepic = "static/assets/img/default.png"
+		context = { "ProfilePic": u.profilepic, "whosprofile": username, "logged_in_as": request.user.username}
+		if request.user.is_authenticated:
+			return render(request, 'logged-in-profile.html', context)
+		return render(request, 'profile.html', context)
+	else:
+		return redirect(home)
+
+	
+
 
 def signup(request):
     context={}

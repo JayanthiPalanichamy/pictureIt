@@ -19,9 +19,13 @@ from . import views
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+    url(r'^ajax-photo-feed$',views.ajaxphotofeed),
     url(r'^$',views.home),
     url(r'^sign-up$',views.signup),
+    url(r'^(?P<username>[a-zA-Z0-9_]+)$',views.profile),
     url(r'^ajax-sign-up$',views.ajaxsignup),
     url(r'^ajax-login$',views.ajaxlogin),
     url(r'^ajax-save-photo$',views.ajaxsavephoto),
+    url(r'^ajax-profile-feed$',views.ajaxprofilefeed),
+
 ]
