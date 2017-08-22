@@ -21,6 +21,7 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^$',views.home),
     url(r'^sign-up$',views.signup),
+    url(r'^logout$', views.logout),
     url(r'^(?P<username>[a-zA-Z0-9_]+)$',views.profile),
     url(r'^ajax-sign-up$',views.ajaxsignup),
     url(r'^ajax-login$',views.ajaxlogin),
@@ -29,5 +30,6 @@ urlpatterns = [
     url(r'^ajax-profile-feed$',views.ajaxprofilefeed),
     url(r'^ajax-set-profile-pic$', views.ajaxsetprofilepic),
     url(r'^ajax-like-photo$',views.ajaxlikephoto),
+    url(r'^ajax-follow$',views.ajaxfollow),
 
 ]

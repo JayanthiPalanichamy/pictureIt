@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth import authenticate
 from django.db.models import F
-from pictureIt.models import User,Photo,PhotoLikes
+from pictureIt.models import User,Photo,PhotoLikes,Followers
 from django.contrib.auth.hashers import make_password,check_password
 from urllib.request import urlopen
 from random import randint
@@ -174,7 +174,7 @@ class AjaxProfileFeed(Ajax):
             return self.error("Malformed request, did not process.")
         out = []
         for item in Photo.objects.filter(owner=self.username).order_by('-date_uploaded')[int(self.start):int(self.start)+3]:
-            if PhotoLikes.objects.filter(liker=self.user.username).filter(postid=item.id).exists():
+            if PhotoLikes.objects.filter(liker=self.username).filter(postid=item.id).exists():
                 liked = True
             else:
                 liked = False
@@ -200,6 +200,27 @@ class AjaxSetProfilePic(Ajax):
         u.save()
 
         return self.success("Profile Image Uploaded")
+class AjaxFollow(Ajax):
+    def validate(self):
+        try:
+            self.follower = self.args[0]["user"]
+        except Exception as e:
+            return self.error("Malformed request, did not process.")
+
+        if self.user == "NL":
+            return self.error("Unauthorised request.")
+
+        if self.user.username == self.follower:
+                return self.error("Can't follow yourself")
+
+        if not Followers.objects.filter(user=self.follower,follower=self.user.username).exists():
+            f = Followers(user=self.follower, follower=self.user.username).save()
+            following = True
+        else:
+            Followers.objects.filter(user=self.follower, follower=self.user.username).delete()
+            following = False
+        out = { "Following": following }
+        return self.items(json.dumps(out))
 
 
 

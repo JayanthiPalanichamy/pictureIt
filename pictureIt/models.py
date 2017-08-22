@@ -22,4 +22,8 @@ class Photo(models.Model):
 class PhotoLikes(models.Model):
 	postid=models.IntegerField()
 	liker=models.CharField(max_length=20)
+	
+class Followers(models.Model):
+	user=models.CharField(max_length=20,default="")
+	follower=models.CharField(max_length=20,default="")
 		

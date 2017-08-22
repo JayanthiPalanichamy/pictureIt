@@ -1,5 +1,5 @@
 from django.shortcuts import render,redirect
-from .models import User
+from .models import User,Followers
 from .forms import *
 from django.contrib.auth import authenticate,login,logout as dlogout
 
@@ -43,12 +43,23 @@ def ajaxprofilefeed(request):
 	context={'ajax_output':ajax.output()}
 	return render(request,'ajax.html',context)
 
+def ajaxfollow(request):
+	ajax=AjaxFollow(request.GET,request.user)
+	context={'ajax_output':ajax.output()}
+	return render(request,'ajax.html',context)
+
+
+
 def profile(request,username):
 	if User.objects.filter(username=username).exists():
 		u=User.objects.filter(username=username)[0]
+		if not Followers.objects.filter(user=username, follower=request.user.username).exists():
+			following = "Follow"
+		else:
+			following = "Unfollow"
 		if u.profilepic == "":
 			u.profilepic = "static/assets/img/default.png"
-		context = { "ProfilePic": u.profilepic, "whosprofile": username, "logged_in_as": request.user.username}
+		context = { "ProfilePic": u.profilepic, "whosprofile": username, "logged_in_as": request.user.username,"following":following}
 		if request.user.is_authenticated:
 			return render(request, 'logged-in-profile.html', context)
 		return render(request, 'profile.html', context)
@@ -72,5 +83,9 @@ def home(request):
 		return render(request, 'logged-in-index.html', context)
 
 	return render(request, 'index.html', context)
+def logout(request):
+	context = {}
+	dlogout(request)
+	return redirect(home)
 
 
