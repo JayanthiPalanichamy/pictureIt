@@ -28,5 +28,6 @@ urlpatterns = [
     url(r'^ajax-photo-feed$',views.ajaxphotofeed),
     url(r'^ajax-profile-feed$',views.ajaxprofilefeed),
     url(r'^ajax-set-profile-pic$', views.ajaxsetprofilepic),
+    url(r'^ajax-like-photo$',views.ajaxlikephoto),
 
 ]

@@ -12,11 +12,17 @@ def ajaxsavephoto(request):
 	ajax=AjaxSavePhoto(request.POST,request.user)
 	context={ 'ajax_output':ajax.output() }
 	return render(request,'ajax.html',context)
-	
+
 def ajaxsetprofilepic(request):
 	ajax = AjaxSetProfilePic(request.POST, request.user)
 	context = { 'ajax_output': ajax.output() }
 	return render(request, 'ajax.html', context)
+
+def ajaxlikephoto(request):
+	ajax = AjaxLikePhoto(request.GET, request.user)
+	context = { 'ajax_output': ajax.output() }
+	return render(request, 'ajax.html', context)
+
 
 
 def ajaxlogin(request):

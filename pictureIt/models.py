@@ -19,4 +19,7 @@ class Photo(models.Model):
 	tags=models.IntegerField(default=0)
 	main_colour=models.CharField(max_length=15,default="")
 	
+class PhotoLikes(models.Model):
+	postid=models.IntegerField()
+	liker=models.CharField(max_length=20)
 		

@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth import authenticate
 from django.db.models import F
-from pictureIt.models import User,Photo
+from pictureIt.models import User,Photo,PhotoLikes
 from django.contrib.auth.hashers import make_password,check_password
 from urllib.request import urlopen
 from random import randint
@@ -118,21 +118,51 @@ class AjaxSavePhoto(Ajax):
         p.save()      
         return self.success("Image Uploaded")
 
-class AjaxPhotoFeed(Ajax):
-
+class AjaxLikePhoto(Ajax):
     def validate(self):
         try:
-            self.start=self.args[0]["start"]
+            self.postid = self.args[0]["id"]
         except Exception as e:
-            return self.error("Malformed request,did not process")
-        out=[]
-        profilepics={}
-        for user in User.objects.filter(username=self.user.username):
-            profilepics[user.username]=user.profilepic
-            if user.profilepic=="":
-                profilepics[user.username]="static/assets/img/default.png"
-        for item in Photo.objects.filter(owner=self.user.username).order_by('-date_uploaded')[int(self.start):int(self.start)+3]:
-            out.append({"PostID":item.id,"URL":item.url,"Caption":item.caption,"Owner":item.owner,"Likes":item.likes,"DateUploaded":item.date_uploaded.strftime("%Y-%m-%d %H:%M:%S"),"Liked":False,"ProfilePic":profilepics[item.owner]+"","MainColour":item.main_colour})
+            return self.error("Malformed request, did not process.")
+
+        if self.user == "NL":
+            return self.error("Unauthorised request.")
+
+        if not PhotoLikes.objects.filter(liker=self.user.username, postid=self.postid).exists():
+            Photo.objects.filter(id=self.postid).update(likes=F('likes')+1)
+            like = PhotoLikes(postid=self.postid, liker=self.user.username)
+            like.save()
+        else:
+            Photo.objects.filter(id=self.postid).update(likes=F('likes')-1)
+            PhotoLikes.objects.filter(postid=self.postid, liker=self.user.username).delete()
+
+        return self.success("Photo Liked!")
+
+class AjaxPhotoFeed(Ajax):
+    def validate(self):
+        try:
+            self.start = self.args[0]["start"]
+        except Exception as e:
+            return self.error("Malformed request, did not process.")
+        out = []
+        followerslist = [self.user.username]
+        profilepics = {}
+
+        for follower in Followers.objects.filter(follower=self.user.username):
+            followerslist.append(follower.user)
+
+        for user in User.objects.filter(username__in=followerslist):
+            profilepics[user.username] = user.profilepic
+            if user.profilepic == "":
+                profilepics[user.username] = "static/assets/img/default.png"
+
+        for item in Photo.objects.filter(owner__in=followerslist).order_by('-date_uploaded')[int(self.start):int(self.start)+3]:
+            if PhotoLikes.objects.filter(liker=self.user.username).filter(postid=item.id).exists():
+                liked = True
+            else:
+                liked = False
+            out.append({ "PostID": item.id, "URL": item.url, "Caption": item.caption, "Owner": item.owner, "Likes": item.likes, "DateUploaded": item.date_uploaded.strftime("%Y-%m-%d %H:%M:%S"), "Liked": liked, "ProfilePic": profilepics[item.owner]+"", "MainColour": item.main_colour })
+
         return self.items(json.dumps(out))
 
 class AjaxProfileFeed(Ajax):
@@ -144,11 +174,13 @@ class AjaxProfileFeed(Ajax):
             return self.error("Malformed request, did not process.")
         out = []
         for item in Photo.objects.filter(owner=self.username).order_by('-date_uploaded')[int(self.start):int(self.start)+3]:
-            
-            out.append({ "PostID": item.id, "URL": item.url, "Caption": item.caption, "Owner": item.owner, "Likes": item.likes, "DateUploaded": item.date_uploaded.strftime("%Y-%m-%d %H:%M:%S"),  "MainColour": item.main_colour })
+            if PhotoLikes.objects.filter(liker=self.user.username).filter(postid=item.id).exists():
+                liked = True
+            else:
+                liked = False
+            out.append({ "PostID": item.id, "URL": item.url, "Caption": item.caption, "Owner": item.owner, "Likes": item.likes, "DateUploaded": item.date_uploaded.strftime("%Y-%m-%d %H:%M:%S"), "Liked": liked, "MainColour": item.main_colour })
 
         return self.items(json.dumps(out))
-
 class AjaxSetProfilePic(Ajax):
     def validate(self):
         try:
